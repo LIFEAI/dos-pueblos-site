@@ -186,7 +186,7 @@ const TIMELINE_EVENTS = [
       'Multi-tribal co-management with Indigenous leaders and Chumash allies',
       'Applied Traditional Ecological Knowledge (TEK) integrated into operations',
       'Revenue Engine: sustainable hospitality, regenerative agriculture, biodiversity credits',
-      'Stewardship Trust holds Place Regenerative Trust covenants in perpetuity',
+      'Stewardship Trust holds Planetary Regenerative Trust covenants in perpetuity',
       'Current owners Roger & Robin Himovitz consulting with Earth Elders',
       'Goal: prove that conservation, culture, and commerce can align'
     ]
@@ -518,13 +518,13 @@ export default function App() {
       <section className="structure-bg" id="structure">
         <div className="section-inner">
           <Section>
-            <div className="eyebrow">The Structure · Place Regenerative Trust</div>
+            <div className="eyebrow">The Structure · Planetary Regenerative Trust</div>
             <h2 className="section-title">
               Three entities.<br /><em>One living covenant.</em>
             </h2>
             <p className="body-text" style={{ maxWidth: 680 }}>
               The Triple Play structure binds three interlocking legal entities under 
-              Place Regenerative Trust covenants — creating a vehicle that is investable, 
+              Planetary Regenerative Trust covenants — creating a vehicle that is investable, 
               conserved, and tribally co-managed simultaneously. No single entity can 
               act without the others. The land is protected in perpetuity.
             </p>
@@ -704,7 +704,7 @@ export default function App() {
       <footer>
         <div className="footer-left">
           Dos Pueblos Ranch.<br />
-          <em>A Place Regenerative Trust acquisition.</em>
+          <em>A Planetary Regenerative Trust acquisition.</em>
         </div>
         <div className="footer-right">
           RDC × Regenesis Group<br />

@@ -1,13 +1,18 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-// Image placeholder component — swap src for real R2 URL once Bananapro delivers
-function ImgPh({ h = 320, icon = '🌊', label, path }) {
+// R2 CDN Base
+const CDN = 'https://pub-ff9788cd4f1f494db0491a197025a94c.r2.dev/dos-pueblos/kogevinas'
+
+// Image component with lazy loading
+function Img({ src, alt = '', className = '', style = {} }) {
   return (
-    <div className="img-ph" style={{ height: h }}>
-      <span>{icon}</span>
-      <span className="ph-label">{label}</span>
-      <span className="ph-path">{path}</span>
-    </div>
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      style={{ width: '100%', height: '100%', objectFit: 'cover', ...style }}
+      loading="lazy"
+    />
   )
 }
 
@@ -33,11 +38,139 @@ function useReveal() {
   return ref
 }
 
-function Section({ children, className = '' }) {
+function Section({ children }) {
   const ref = useReveal()
   return <div ref={ref}>{children}</div>
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// INTERACTIVE TIMELINE COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
+const TIMELINE_EVENTS = [
+  {
+    year: '10,000+ BCE',
+    title: 'Chumash Stewardship',
+    desc: 'Continuous Indigenous stewardship at Mikiw and Kuyamu villages. Twin villages flourish on the coastal bluffs, sustained by the abundance of Naples Reef.',
+    icon: '🏺',
+    era: 'indigenous'
+  },
+  {
+    year: '1542',
+    title: 'First European Contact',
+    desc: 'Juan Rodríguez Cabrillo anchors offshore on October 16. Chumash paddle out in tomol canoes to trade fish and chia flour for textiles and Venetian beads.',
+    icon: '⛵',
+    era: 'contact'
+  },
+  {
+    year: '1842',
+    title: 'Mexican Land Grant',
+    desc: 'Governor Juan Alvarado awards Irish immigrant doctor Nicolas A. Den the 15,535-acre Rancho Dos Pueblos land grant during the Mexican rancho era.',
+    icon: '📜',
+    era: 'rancho'
+  },
+  {
+    year: '1943–1977',
+    title: 'Orchid Empire',
+    desc: "Signal Oil's Sam Mosher develops the world's largest orchid farm on-site. Casa Grande hosts President Harry Truman. The ranch becomes a storied California landmark.",
+    icon: '🌺',
+    era: 'orchid'
+  },
+  {
+    year: '2021–2022',
+    title: 'Parcels Reassembled',
+    desc: 'Roger Himovitz reassembles the fragmented 219-acre coastal property across 18 legal parcels for over $40M, including the Cultured Abalone Farm.',
+    icon: '🗺',
+    era: 'modern'
+  },
+  {
+    year: 'Nov 2024',
+    title: 'Marine Sanctuary',
+    desc: 'NOAA designates the Chumash Heritage National Marine Sanctuary — the first Indigenous-nominated marine sanctuary in U.S. history. Dos Pueblos sits at its southern boundary.',
+    icon: '🌊',
+    era: 'sanctuary'
+  },
+  {
+    year: '2026',
+    title: 'Escrow Status',
+    desc: 'Property under contract at $62M to Northern Chumash Tribal Council. A regenerative conservation acquisition structure is being developed.',
+    icon: '🔑',
+    era: 'present'
+  },
+]
+
+function Timeline() {
+  const [activeIdx, setActiveIdx] = useState(0)
+  const [isHovered, setIsHovered] = useState(false)
+  
+  // Auto-advance when not hovered
+  useEffect(() => {
+    if (isHovered) return
+    const timer = setInterval(() => {
+      setActiveIdx(i => (i + 1) % TIMELINE_EVENTS.length)
+    }, 4000)
+    return () => clearInterval(timer)
+  }, [isHovered])
+  
+  const active = TIMELINE_EVENTS[activeIdx]
+  
+  return (
+    <div 
+      className="timeline-container"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Progress line */}
+      <div className="timeline-track">
+        <div 
+          className="timeline-progress" 
+          style={{ width: `${(activeIdx / (TIMELINE_EVENTS.length - 1)) * 100}%` }}
+        />
+        {TIMELINE_EVENTS.map((evt, i) => (
+          <button
+            key={evt.year}
+            className={`timeline-node ${i === activeIdx ? 'active' : ''} ${i < activeIdx ? 'past' : ''}`}
+            style={{ left: `${(i / (TIMELINE_EVENTS.length - 1)) * 100}%` }}
+            onClick={() => setActiveIdx(i)}
+            aria-label={evt.year}
+          >
+            <span className="node-icon">{evt.icon}</span>
+            <span className="node-year">{evt.year}</span>
+          </button>
+        ))}
+      </div>
+      
+      {/* Active event detail */}
+      <div className="timeline-detail" key={activeIdx}>
+        <div className="timeline-era">{active.era.toUpperCase()}</div>
+        <h3 className="timeline-title">{active.title}</h3>
+        <p className="timeline-desc">{active.desc}</p>
+      </div>
+      
+      {/* Nav arrows */}
+      <div className="timeline-nav">
+        <button 
+          onClick={() => setActiveIdx(i => Math.max(0, i - 1))}
+          disabled={activeIdx === 0}
+          aria-label="Previous"
+        >
+          ←
+        </button>
+        <span className="timeline-counter">{activeIdx + 1} / {TIMELINE_EVENTS.length}</span>
+        <button 
+          onClick={() => setActiveIdx(i => Math.min(TIMELINE_EVENTS.length - 1, i + 1))}
+          disabled={activeIdx === TIMELINE_EVENTS.length - 1}
+          aria-label="Next"
+        >
+          →
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN APP
+// ─────────────────────────────────────────────────────────────────────────────
 export default function App() {
   return (
     <>
@@ -45,17 +178,24 @@ export default function App() {
       <nav>
         <a className="nav-logo" href="#top">Dos Pueblos Ranch</a>
         <ul className="nav-links">
+          <li><a href="#timeline">Timeline</a></li>
           <li><a href="#story">The Place</a></li>
           <li><a href="#assets">Living Assets</a></li>
           <li><a href="#sanctuary">Sanctuary</a></li>
           <li><a href="#structure">The Structure</a></li>
-          <li><a href="#team">Team</a></li>
           <li><a href="#deal">The Deal</a></li>
         </ul>
       </nav>
 
-      {/* ── HERO ── */}
-      <section className="hero" id="top">
+      {/* ── HERO with background image ── */}
+      <section className="hero" id="top" style={{
+        backgroundImage: `
+          linear-gradient(to bottom, rgba(14,28,43,0.3) 0%, rgba(14,28,43,0.5) 40%, rgba(14,28,43,0.92) 100%),
+          url(${CDN}/property_landscape/DP-Ranch-0045.jpg)
+        `,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center 30%'
+      }}>
         <div className="reveal reveal-1">
           <div className="hero-eyebrow">Gaviota Coast · Santa Barbara County, California · 34.4°N 119.9°W</div>
         </div>
@@ -86,6 +226,19 @@ export default function App() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── TIMELINE SECTION ── */}
+      <section className="timeline-bg" id="timeline">
+        <div className="section-inner">
+          <Section>
+            <div className="eyebrow">History of Place</div>
+            <h2 className="section-title" style={{ marginBottom: 48 }}>
+              10,000 years of<br /><em>continuous stewardship.</em>
+            </h2>
+            <Timeline />
+          </Section>
         </div>
       </section>
 
@@ -127,22 +280,35 @@ export default function App() {
                 </blockquote>
               </div>
               <div>
-                <ImgPh
-                  h={420}
-                  icon="🌊"
-                  label="Hero — blufftop aerial, golden hour"
-                  path="projects/dos-pueblos/hero-bluff-01.jpg"
-                />
-                <div style={{ height: 2, margin: '2px 0' }} />
-                <ImgPh
-                  h={200}
-                  icon="🏺"
-                  label="Mikiw / Kuyamu — bluff view toward creek"
-                  path="projects/dos-pueblos/card-creek-01.jpg"
-                />
+                <div style={{ height: 420, borderRadius: 4, overflow: 'hidden', marginBottom: 8 }}>
+                  <Img src={`${CDN}/property_landscape/DP-Ranch-0027.jpg`} alt="Coastal bluffs at golden hour" />
+                </div>
+                <div style={{ height: 200, borderRadius: 4, overflow: 'hidden' }}>
+                  <Img src={`${CDN}/property_landscape/DP-Ranch-0040.jpg`} alt="Creek and coastal landscape" />
+                </div>
               </div>
             </div>
           </Section>
+        </div>
+      </section>
+
+      <div className="divider" />
+
+      {/* ── PHOTO GALLERY STRIP ── */}
+      <section style={{ padding: '48px 0', background: 'var(--navy2)' }}>
+        <div className="gallery-scroll">
+          {[
+            `${CDN}/property_landscape/DP-Ranch-0010.jpg`,
+            `${CDN}/ranch_house/Ranch-House-0002.jpg`,
+            `${CDN}/property_landscape/DP-Ranch-0029.jpg`,
+            `${CDN}/barns_events/7-Barn.png`,
+            `${CDN}/property_landscape/DP-Ranch-0022.jpg`,
+            `${CDN}/abalone_farm/Aquaculture.jpeg`,
+          ].map((src, i) => (
+            <div key={i} className="gallery-item">
+              <Img src={src} alt={`Gallery image ${i + 1}`} />
+            </div>
+          ))}
         </div>
       </section>
 
@@ -169,34 +335,43 @@ export default function App() {
                 icon: '🐚', name: 'The Cultured Abalone Farm',
                 desc: 'Established 1989. ~1M abalone/year. Closed-loop seawater from the Santa Barbara Channel. Endangered white abalone captive breeding for NOAA. Featured on PBS Hope in the Water. Partners: UC Davis Bodega Marine Lab, The Bay Foundation.',
                 tag: 'Est. 1989 · PBS Featured · NOAA Partner',
+                img: `${CDN}/abalone_farm/aquaculture-harvest.png`
               },
               {
                 icon: '🦔', name: 'Purple Sea Urchin Ranching',
                 desc: 'Removes starving "zombie urchins" from kelp barrens, fattens them onshore, produces commercial-grade uni ("Purple Hotchis") while actively restoring Santa Barbara Channel kelp forests. Partnership with commercial divers Stephanie Mutz and Harry Liquornik.',
                 tag: 'Kelp Restoration · Commercial Uni',
+                img: `${CDN}/abalone_farm/Aquaculture.jpeg`
               },
               {
                 icon: '🌊', name: '2,000+ Ft Ocean Frontage',
                 desc: 'Private blufftop access to a secluded beach. Year-round Dos Pueblos Creek estuary and tidal zone. One of the last 76-mile stretches of undeveloped California coastline. Direct adjacency to Naples Reef, a premier Southern California dive site.',
                 tag: 'Coastal · Private Beach · Estuary',
+                img: `${CDN}/property_landscape/DP-Ranch-0045.jpg`
               },
               {
                 icon: '🏛', name: 'Casa Grande',
                 desc: "1920s Mediterranean mansion built by Signal Oil's Sam Mosher. 5BD/7BA. Hosted President Harry Truman. Eligible for California Historic Register designation. Proven film and event location — Love Island USA Season 4, 2022.",
                 tag: '1920s · Historic · Film Location',
+                img: `${CDN}/ranch_house/Ranch-House-0002.jpg`
               },
               {
                 icon: '🥑', name: 'Agricultural Orchards',
                 desc: '30 acres of avocado orchards and 25 acres of cherimoya trees — among the only commercial cherimoya operations in the continental U.S. Active revenue-generating operation. Commercial harvest rights unaffected by conservation structures.',
                 tag: '30 Ac Avocado · 25 Ac Cherimoya',
+                img: `${CDN}/agriculture/cherimoya.jpeg`
               },
               {
                 icon: '🗺', name: '18 Legal Parcels',
                 desc: 'Tracing partly to an 1887 paper subdivision validated by the California Supreme Court in Morehart v. County of Santa Barbara (1994). Creates significant "highest and best use" appraisal delta for conservation easement optimization — a $133M HBU supports a $62M acquisition.',
                 tag: '18 Parcels · $133M HBU · §170(h)',
+                img: `${CDN}/misc/Dos-Pueblos-Lables-6.png`
               },
-            ].map(({ icon, name, desc, tag }) => (
+            ].map(({ icon, name, desc, tag, img }) => (
               <div className="asset-card" key={name}>
+                <div className="asset-img">
+                  <Img src={img} alt={name} />
+                </div>
                 <span className="asset-icon">{icon}</span>
                 <div className="asset-name">{name}</div>
                 <div className="asset-desc">{desc}</div>
@@ -257,12 +432,9 @@ export default function App() {
                     </div>
                   ))}
                 </div>
-                <ImgPh
-                  h={200}
-                  icon="🐬"
-                  label="CHNMS southern boundary — aerial ocean view"
-                  path="projects/dos-pueblos/card-sanctuary-01.jpg"
-                />
+                <div style={{ height: 200, borderRadius: 4, overflow: 'hidden' }}>
+                  <Img src={`${CDN}/tidepools/Tidepooling.jpg`} alt="Tidepools at Dos Pueblos" />
+                </div>
               </div>
             </div>
           </Section>
